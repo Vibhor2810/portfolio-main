@@ -12,12 +12,25 @@ import {
   Dumbbell,
   Scissors,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Send,
+  Building,
+  User,
+  Phone,
+  Briefcase
 } from 'lucide-react';
+
 import CafeDemo from './demos/CafeDemo';
 import SalonDemo from './demos/SalonDemo';
 import GymDemo from './demos/GymDemo';
 import { DEMO_URLS } from './config/demoUrls';
+
+// ==========================================
+// REPLACE WITH YOUR ACTUAL WHATSAPP NUMBER
+// Format: country code + number (No '+', no spaces)
+// Example for India: '919876543210'
+// ==========================================
+const WHATSAPP_PHONE_NUMBER = '918650805090';
 
 interface FaqItem {
   q: string;
@@ -134,6 +147,17 @@ export default function App() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [activeModalProject, setActiveModalProject] = useState<ProjectItem | null>(null);
 
+  // User Inquiry Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    businessName: '',
+    businessType: 'Cafe / Restaurant',
+    phone: '',
+    budget: '₹14,999 (Business Suite)',
+    message: ''
+  });
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname || window.location.hash.replace('#', '') || '/';
@@ -156,7 +180,29 @@ export default function App() {
     setTimeout(() => setCopiedEmail(false), 2500);
   };
 
-  // Local fallback route switcher
+  // Direct WhatsApp Message Generators
+  const getGeneralWhatsAppUrl = () => {
+    const text = encodeURIComponent("Hi Vibhor, I saw your portfolio and would like to discuss building a website for my business.");
+    return `https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${text}`;
+  };
+
+  const handleInquirySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const inquiryText = encodeURIComponent(
+      `*New Project Inquiry via Portfolio*\n\n` +
+      `*Name:* ${formData.name}\n` +
+      `*Business:* ${formData.businessName || 'N/A'}\n` +
+      `*Category:* ${formData.businessType}\n` +
+      `*Phone:* ${formData.phone || 'N/A'}\n` +
+      `*Target Package:* ${formData.budget}\n` +
+      `*Project Details:* ${formData.message || 'Looking for initial consultation.'}`
+    );
+
+    // Open WhatsApp directly with populated form information
+    window.open(`https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${inquiryText}`, '_blank');
+    setFormSubmitted(true);
+  };
+
   if (currentPath === '/demos/cafe' || currentPath.endsWith('#/demos/cafe')) {
     return <CafeDemo />;
   }
@@ -186,30 +232,29 @@ export default function App() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-mono uppercase tracking-wider text-zinc-400">
             <a href="#demos" className="hover:text-cyan-400 transition-colors">Client Demos</a>
-            <a href="#services" className="hover:text-cyan-400 transition-colors">What I Build</a>
+            <a href="#quote" className="hover:text-cyan-400 transition-colors">Get Instant Quote</a>
             <a href="#pricing" className="hover:text-cyan-400 transition-colors">Packages</a>
             <a href="#faqs" className="hover:text-cyan-400 transition-colors">FAQs</a>
           </nav>
 
           <div className="hidden sm:flex items-center gap-3">
             <a
-              href="https://wa.me/?text=Hi%20Vibhor,%20I%20am%20interested%20in%20a%20website%20for%20my%20business."
+              href={getGeneralWhatsAppUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold hover:bg-emerald-900 transition-colors flex items-center gap-1.5"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              WhatsApp
+              Chat on WhatsApp
             </a>
             <a
-              href="#contact"
+              href="#quote"
               className="px-4 py-1.5 rounded-full bg-white text-zinc-950 text-xs font-bold font-mono uppercase tracking-wider hover:bg-zinc-200 transition-all shadow-sm active:scale-95"
             >
               Start Project
             </a>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -219,14 +264,20 @@ export default function App() {
           </button>
         </div>
 
-        {/* Mobile Dropdown */}
         {mobileMenuOpen && (
           <div className="md:hidden border-b border-white/10 bg-[#0e0e12] px-4 py-5 space-y-3">
             <a href="#demos" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-xs font-mono uppercase text-zinc-300 hover:text-cyan-400">Client Demos</a>
-            <a href="#services" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-xs font-mono uppercase text-zinc-300 hover:text-cyan-400">What I Build</a>
+            <a href="#quote" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-xs font-mono uppercase text-zinc-300 hover:text-cyan-400">Get Instant Quote</a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-xs font-mono uppercase text-zinc-300 hover:text-cyan-400">Packages</a>
             <a href="#faqs" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-xs font-mono uppercase text-zinc-300 hover:text-cyan-400">FAQs</a>
-            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-xs font-mono font-bold text-cyan-400">Contact / Hire &rarr;</a>
+            <a
+              href={getGeneralWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block py-2 text-xs font-mono font-bold text-emerald-400"
+            >
+              Open Direct WhatsApp Chat &rarr;
+            </a>
           </div>
         )}
       </header>
@@ -260,10 +311,13 @@ export default function App() {
               </a>
 
               <a
-                href="#contact"
-                className="px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                href={getGeneralWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-600/20"
               >
-                <span>Hire Me / Get Quote</span>
+                <MessageSquare className="w-4 h-4" />
+                <span>Chat on WhatsApp</span>
               </a>
             </div>
 
@@ -338,7 +392,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Card Action Bar */}
                 <div className="px-6 py-4 bg-zinc-950/80 border-t border-white/[0.08] flex items-center justify-between gap-2">
                   <a
                     href={project.liveUrl}
@@ -413,6 +466,151 @@ export default function App() {
         </div>
       )}
 
+      {/* USER INQUIRY & PROJECT ESTIMATION AREA */}
+      <section id="quote" className="py-20 sm:py-28 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/[0.06]">
+        <div className="text-center mb-10">
+          <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block mb-2 font-bold">Start Your Project</span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Request an Instant Proposal</h2>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-2 max-w-lg mx-auto">
+            Fill in your details below. Submitting will immediately open your direct WhatsApp chat with your project requirements pre-loaded.
+          </p>
+        </div>
+
+        <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 sm:p-10 backdrop-blur-md">
+          {formSubmitted ? (
+            <div className="text-center py-8 space-y-4">
+              <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto">
+                <Check className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white">Opening WhatsApp Chat...</h3>
+              <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                If WhatsApp didn't open automatically, click the direct button below:
+              </p>
+              <a
+                href={getGeneralWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 text-white font-mono text-xs font-bold hover:bg-emerald-500 transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" /> Open WhatsApp
+              </a>
+            </div>
+          ) : (
+            <form onSubmit={handleInquirySubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-2">Your Name *</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rahul Sharma"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full bg-zinc-950/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-2">Business Name</label>
+                  <div className="relative">
+                    <Building className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Royal Cafe / Studio V"
+                      value={formData.businessName}
+                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                      className="w-full bg-zinc-950/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-2">Business Type / Niche</label>
+                  <div className="relative">
+                    <Briefcase className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
+                    <select
+                      value={formData.businessType}
+                      onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+                      className="w-full bg-zinc-950/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="Cafe / Restaurant">Cafe / Restaurant / Bakery</option>
+                      <option value="Salon & Spa">Salon / Spa / Barbershop</option>
+                      <option value="Gym & Fitness">Gym / CrossFit / Yoga Studio</option>
+                      <option value="Healthcare / Clinic">Healthcare / Clinic / Doctor</option>
+                      <option value="Real Estate / Architecture">Real Estate / Interior Design</option>
+                      <option value="Other Service Business">Other Service Business</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-2">WhatsApp or Phone Number</label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
+                    <input
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full bg-zinc-950/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-zinc-400 mb-2">Target Package or Budget</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    '₹7,999 (Starter Single-Page)',
+                    '₹14,999 (Business Suite)',
+                    '₹24,999+ (Custom App)'
+                  ].map((pkg) => (
+                    <button
+                      type="button"
+                      key={pkg}
+                      onClick={() => setFormData({ ...formData, budget: pkg })}
+                      className={`py-2 px-3 rounded-xl border text-xs font-mono transition-all text-left flex items-center justify-between ${
+                        formData.budget === pkg
+                          ? 'border-cyan-400 bg-cyan-950/30 text-white'
+                          : 'border-white/10 bg-zinc-950/60 text-zinc-400 hover:border-white/20'
+                      }`}
+                    >
+                      <span>{pkg}</span>
+                      {formData.budget === pkg && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-zinc-400 mb-2">Tell Me About Your Goals (Optional)</label>
+                <textarea
+                  rows={3}
+                  placeholder="Need online ordering, table reservations, appointment bookings, or a modern rebrand..."
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="w-full bg-zinc-950/80 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-cyan-400 transition-colors resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/10 cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                <span>Submit &amp; Open Direct WhatsApp Chat</span>
+              </button>
+            </form>
+          )}
+        </div>
+      </section>
+
       {/* PRICING PACKAGES */}
       <section id="pricing" className="py-20 sm:py-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/[0.06]">
         <div className="text-center max-w-xl mx-auto mb-14">
@@ -424,7 +622,6 @@ export default function App() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
           <div className="p-7 rounded-3xl bg-zinc-900/50 border border-white/10 flex flex-col justify-between space-y-6">
             <div>
               <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Starter Single-Page</span>
@@ -440,7 +637,7 @@ export default function App() {
               </ul>
             </div>
 
-            <a href="#contact" className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors">
+            <a href="#quote" className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors">
               Choose Starter
             </a>
           </div>
@@ -464,7 +661,7 @@ export default function App() {
               </ul>
             </div>
 
-            <a href="#contact" className="w-full py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-bold font-mono text-xs uppercase tracking-wider text-center block transition-colors">
+            <a href="#quote" className="w-full py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-bold font-mono text-xs uppercase tracking-wider text-center block transition-colors">
               Choose Business Suite
             </a>
           </div>
@@ -483,11 +680,10 @@ export default function App() {
               </ul>
             </div>
 
-            <a href="#contact" className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors">
+            <a href="#quote" className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors">
               Request Custom Quote
             </a>
           </div>
-
         </div>
       </section>
 
@@ -542,7 +738,7 @@ export default function App() {
             </button>
 
             <a
-              href="https://wa.me/?text=Hi%20Vibhor,%20I%20am%20interested%20in%20building%20a%20website%20for%20my%20business."
+              href={getGeneralWhatsAppUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-600/20"
