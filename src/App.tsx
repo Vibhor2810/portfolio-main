@@ -17,7 +17,8 @@ import {
   Building,
   User,
   Phone,
-  Briefcase
+  Briefcase,
+  Clock
 } from 'lucide-react';
 
 import CafeDemo from './demos/CafeDemo';
@@ -31,7 +32,6 @@ import { DEMO_URLS } from './config/demoUrls';
 // Example for India: '919876543210'
 // ==========================================
 const WHATSAPP_PHONE_NUMBER = '918650805090';
-
 interface FaqItem {
   q: string;
   a: string;
@@ -53,6 +53,38 @@ interface ProjectItem {
   tags: string[];
   features: string[];
 }
+
+interface PackageOption {
+  id: string;
+  name: string;
+  price: string;
+  deliveryTime: string;
+  summary: string;
+}
+
+const PACKAGE_OPTIONS: PackageOption[] = [
+  {
+    id: 'starter',
+    name: 'Starter Single-Page',
+    price: '₹7,999',
+    deliveryTime: '3 to 5 business days',
+    summary: 'Single-page scroll layout, mobile responsive, click-to-call/WhatsApp integration.'
+  },
+  {
+    id: 'business',
+    name: 'Complete Business Suite',
+    price: '₹14,999',
+    deliveryTime: '7 to 10 business days',
+    summary: 'Up to 5 custom sections/pages, dynamic menus/timetables, reservation/booking modal.'
+  },
+  {
+    id: 'custom',
+    name: 'Custom Web Application',
+    price: '₹24,999+',
+    deliveryTime: '2 to 3 weeks',
+    summary: 'Full-stack React/Next.js backend, database setup, authentication, and custom logic.'
+  }
+];
 
 const FAQS: FaqItem[] = [
   {
@@ -147,13 +179,15 @@ export default function App() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [activeModalProject, setActiveModalProject] = useState<ProjectItem | null>(null);
 
+  // Selected package tracking
+  const [selectedPackageId, setSelectedPackageId] = useState<string>('business');
+
   // User Inquiry Form State
   const [formData, setFormData] = useState({
     name: '',
     businessName: '',
     businessType: 'Cafe / Restaurant',
     phone: '',
-    budget: '₹14,999 (Business Suite)',
     message: ''
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -175,10 +209,12 @@ export default function App() {
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('vibhorverma2810@gmail.com');
+    navigator.clipboard.writeText('vibhu132810@gmail.com');
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2500);
   };
+
+  const currentPackage = PACKAGE_OPTIONS.find((pkg) => pkg.id === selectedPackageId) || PACKAGE_OPTIONS[1];
 
   // Direct WhatsApp Message Generators
   const getGeneralWhatsAppUrl = () => {
@@ -194,11 +230,11 @@ export default function App() {
       `*Business:* ${formData.businessName || 'N/A'}\n` +
       `*Category:* ${formData.businessType}\n` +
       `*Phone:* ${formData.phone || 'N/A'}\n` +
-      `*Target Package:* ${formData.budget}\n` +
-      `*Project Details:* ${formData.message || 'Looking for initial consultation.'}`
+      `*Selected Package:* ${currentPackage.name} (${currentPackage.price})\n` +
+      `*Est. Delivery Timeline:* ${currentPackage.deliveryTime}\n` +
+      `*Project Scope/Details:* ${formData.message || 'Looking for initial consultation.'}`
     );
 
-    // Open WhatsApp directly with populated form information
     window.open(`https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${inquiryText}`, '_blank');
     setFormSubmitted(true);
   };
@@ -466,13 +502,13 @@ export default function App() {
         </div>
       )}
 
-      {/* USER INQUIRY & PROJECT ESTIMATION AREA */}
+      {/* USER INQUIRY & PROJECT ESTIMATION AREA (WITH ESTIMATED DELIVERY TIME) */}
       <section id="quote" className="py-20 sm:py-28 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/[0.06]">
         <div className="text-center mb-10">
           <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block mb-2 font-bold">Start Your Project</span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Request an Instant Proposal</h2>
           <p className="text-xs sm:text-sm text-zinc-400 mt-2 max-w-lg mx-auto">
-            Fill in your details below. Submitting will immediately open your direct WhatsApp chat with your project requirements pre-loaded.
+            Choose your preferred package to see real-time delivery turnaround. Submitting opens a direct WhatsApp chat with your estimated quote pre-filled.
           </p>
         </div>
 
@@ -497,6 +533,61 @@ export default function App() {
             </div>
           ) : (
             <form onSubmit={handleInquirySubmit} className="space-y-6">
+              
+              {/* Package Selection with Dynamic Turnaround Preview */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-mono text-zinc-400 font-semibold">Select Your Package</label>
+                  <span className="text-xs font-mono text-cyan-400 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    Est. Turnaround: <strong className="text-white font-bold">{currentPackage.deliveryTime}</strong>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {PACKAGE_OPTIONS.map((pkg) => {
+                    const isSelected = selectedPackageId === pkg.id;
+                    return (
+                      <button
+                        type="button"
+                        key={pkg.id}
+                        onClick={() => setSelectedPackageId(pkg.id)}
+                        className={`p-3.5 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-cyan-400 bg-cyan-950/30 text-white shadow-lg shadow-cyan-500/10'
+                            : 'border-white/10 bg-zinc-950/60 text-zinc-400 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="font-bold text-xs text-zinc-200">{pkg.name}</span>
+                          {isSelected && <Check className="w-4 h-4 text-cyan-400 shrink-0" />}
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <div className="text-sm font-bold text-cyan-300 font-mono">{pkg.price}</div>
+                          <div className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400">
+                            <Clock className="w-3 h-3" />
+                            {pkg.deliveryTime}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Selected Package Banner */}
+                <div className="mt-3 p-3 rounded-xl bg-zinc-950/90 border border-white/5 flex items-center justify-between text-xs text-zinc-400">
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-200 font-semibold">{currentPackage.name}:</span>
+                    <span className="text-zinc-400 font-light">{currentPackage.summary}</span>
+                  </div>
+                  <span className="text-emerald-400 font-mono font-bold whitespace-nowrap ml-3">
+                    🚀 Ships in {currentPackage.deliveryTime}
+                  </span>
+                </div>
+              </div>
+
+              {/* Name & Business */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-zinc-400 mb-2">Your Name *</label>
@@ -528,6 +619,7 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Niche & Contact Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-zinc-400 mb-2">Business Type / Niche</label>
@@ -564,31 +656,6 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-2">Target Package or Budget</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    '₹7,999 (Starter Single-Page)',
-                    '₹14,999 (Business Suite)',
-                    '₹24,999+ (Custom App)'
-                  ].map((pkg) => (
-                    <button
-                      type="button"
-                      key={pkg}
-                      onClick={() => setFormData({ ...formData, budget: pkg })}
-                      className={`py-2 px-3 rounded-xl border text-xs font-mono transition-all text-left flex items-center justify-between ${
-                        formData.budget === pkg
-                          ? 'border-cyan-400 bg-cyan-950/30 text-white'
-                          : 'border-white/10 bg-zinc-950/60 text-zinc-400 hover:border-white/20'
-                      }`}
-                    >
-                      <span>{pkg}</span>
-                      {formData.budget === pkg && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
                 <label className="block text-xs font-mono text-zinc-400 mb-2">Tell Me About Your Goals (Optional)</label>
                 <textarea
                   rows={3}
@@ -604,14 +671,14 @@ export default function App() {
                 className="w-full py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/10 cursor-pointer"
               >
                 <Send className="w-4 h-4" />
-                <span>Submit &amp; Open Direct WhatsApp Chat</span>
+                <span>Submit &amp; Chat on WhatsApp ({currentPackage.deliveryTime})</span>
               </button>
             </form>
           )}
         </div>
       </section>
 
-      {/* PRICING PACKAGES */}
+      {/* PRICING PACKAGES (WITH DELIVERY TIMELINES) */}
       <section id="pricing" className="py-20 sm:py-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/[0.06]">
         <div className="text-center max-w-xl mx-auto mb-14">
           <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block mb-2 font-bold">Transparent Investment</span>
@@ -622,9 +689,16 @@ export default function App() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Starter */}
           <div className="p-7 rounded-3xl bg-zinc-900/50 border border-white/10 flex flex-col justify-between space-y-6">
             <div>
-              <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Starter Single-Page</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Starter Single-Page</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> 3–5 Days
+                </span>
+              </div>
               <h3 className="text-2xl font-bold text-white mt-1">₹7,999</h3>
               <p className="text-xs text-zinc-400 mt-2 font-light">Ideal for new cafes, barbershops, and independent consultants needing a sleek digital presence.</p>
               
@@ -633,22 +707,36 @@ export default function App() {
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Mobile &amp; tablet responsive</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> WhatsApp &amp; phone click-to-call</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Basic Google Maps &amp; SEO setup</li>
-                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> 3-day turnaround</li>
+                <li className="flex items-center gap-2 font-mono text-emerald-400"><Clock className="w-3.5 h-3.5 shrink-0" /> Turnaround: 3 to 5 business days</li>
               </ul>
             </div>
 
-            <a href="#quote" className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPackageId('starter');
+                const el = document.getElementById('quote');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors cursor-pointer"
+            >
               Choose Starter
-            </a>
+            </button>
           </div>
 
+          {/* Business Suite */}
           <div className="p-7 rounded-3xl bg-gradient-to-b from-cyan-950/40 via-zinc-900 to-zinc-900 border-2 border-cyan-500 flex flex-col justify-between space-y-6 relative shadow-xl shadow-cyan-500/10">
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-cyan-400 text-zinc-950 font-mono text-[10px] font-bold uppercase tracking-wider">
               Most Popular
             </span>
 
             <div>
-              <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">Complete Business Suite</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">Complete Business Suite</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/30 text-[11px] font-mono text-cyan-300 flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> 7–10 Days
+                </span>
+              </div>
               <h3 className="text-2xl font-bold text-white mt-1">₹14,999</h3>
               <p className="text-xs text-zinc-400 mt-2 font-light">For established salons, gyms, and restaurants looking to drive direct inquiries and bookings.</p>
               
@@ -658,17 +746,32 @@ export default function App() {
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Dynamic service menu / timetable</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Full Google Search Console verification</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> 30 days free post-launch support</li>
+                <li className="flex items-center gap-2 font-mono text-cyan-300"><Clock className="w-3.5 h-3.5 shrink-0" /> Turnaround: 7 to 10 business days</li>
               </ul>
             </div>
 
-            <a href="#quote" className="w-full py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-bold font-mono text-xs uppercase tracking-wider text-center block transition-colors">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPackageId('business');
+                const el = document.getElementById('quote');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-bold font-mono text-xs uppercase tracking-wider text-center block transition-colors cursor-pointer"
+            >
               Choose Business Suite
-            </a>
+            </button>
           </div>
 
+          {/* Custom Web App */}
           <div className="p-7 rounded-3xl bg-zinc-900/50 border border-white/10 flex flex-col justify-between space-y-6">
             <div>
-              <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Custom Web Application</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Custom Web Application</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-[11px] font-mono text-amber-400 flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> 2–3 Weeks
+                </span>
+              </div>
               <h3 className="text-2xl font-bold text-white mt-1">₹24,999+</h3>
               <p className="text-xs text-zinc-400 mt-2 font-light">Bespoke portals with database integration, member dashboards, and custom business logic.</p>
               
@@ -677,13 +780,23 @@ export default function App() {
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Database &amp; authentication setup</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Payment gateway integration (Razorpay)</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Custom administrative controls</li>
+                <li className="flex items-center gap-2 font-mono text-amber-400"><Clock className="w-3.5 h-3.5 shrink-0" /> Turnaround: 2 to 3 weeks</li>
               </ul>
             </div>
 
-            <a href="#quote" className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPackageId('custom');
+                const el = document.getElementById('quote');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-wider text-center block transition-colors cursor-pointer"
+            >
               Request Custom Quote
-            </a>
+            </button>
           </div>
+
         </div>
       </section>
 
