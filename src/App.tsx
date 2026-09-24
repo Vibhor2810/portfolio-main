@@ -702,7 +702,7 @@ export default function App() {
                 className="w-full py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/10 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
-                <span>{isSubmitting ? 'Logging to Sheet & Connecting...' : `Submit & Chat on WhatsApp (${currentPackage.deliveryTime})`}</span>
+                <span>{isSubmitting ? 'Logging to Sheet & Connecting...' : `Submit & Chat on WhatsApp`}</span>
               </button>
             </form>
           )}
