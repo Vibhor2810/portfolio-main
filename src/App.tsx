@@ -75,14 +75,14 @@ const PACKAGE_OPTIONS: PackageOption[] = [
     id: 'business',
     name: 'Complete Business Suite',
     price: '₹14,999',
-    deliveryTime: '7 to 10 business days',
+    deliveryTime: '7 to 9 business days',
     summary: 'Up to 5 custom sections/pages, dynamic menus/timetables, reservation/booking modal.'
   },
   {
     id: 'custom',
     name: 'Custom Web Application',
     price: '₹24,999+',
-    deliveryTime: '2 to 3 weeks',
+    deliveryTime: '1 to 2 weeks',
     summary: 'Full-stack React/Next.js backend, database setup, authentication, and custom logic.'
   }
 ];
