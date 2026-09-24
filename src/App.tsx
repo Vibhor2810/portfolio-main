@@ -27,11 +27,12 @@ import GymDemo from './demos/GymDemo';
 import { DEMO_URLS } from './config/demoUrls';
 
 // ==========================================
-// REPLACE WITH YOUR ACTUAL WHATSAPP NUMBER
-// Format: country code + number (No '+', no spaces)
-// Example for India: '919876543210'
+// CONFIGURATION
 // ==========================================
 const WHATSAPP_PHONE_NUMBER = '918650805090';
+const CONTACT_EMAIL = 'vibhu132810@gmail.com';
+const GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzLOrj2ZkueGbv3Fr0APReLcwa-MLjDfIp8Lse19AA9XBUgtwZYYoWhGqhx3PiDtww/exec';
+
 interface FaqItem {
   q: string;
   a: string;
@@ -190,6 +191,7 @@ export default function App() {
     phone: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
 
   useEffect(() => {
@@ -209,7 +211,7 @@ export default function App() {
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('vibhu132810@gmail.com');
+    navigator.clipboard.writeText(CONTACT_EMAIL);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2500);
   };
@@ -222,8 +224,34 @@ export default function App() {
     return `https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${text}`;
   };
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
+    const payload = {
+      name: formData.name,
+      businessName: formData.businessName,
+      businessType: formData.businessType,
+      phone: formData.phone,
+      package: `${currentPackage.name} (${currentPackage.price}) - ${currentPackage.deliveryTime}`,
+      message: formData.message
+    };
+
+    // 1. Post data to Google Sheets via Webhook
+    try {
+      if (GOOGLE_SHEET_WEBHOOK_URL) {
+        await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+    } catch (err) {
+      console.error('Failed to log to Google Sheets', err);
+    }
+
+    // 2. Prepare WhatsApp text
     const inquiryText = encodeURIComponent(
       `*New Project Inquiry via Portfolio*\n\n` +
       `*Name:* ${formData.name}\n` +
@@ -235,7 +263,9 @@ export default function App() {
       `*Project Scope/Details:* ${formData.message || 'Looking for initial consultation.'}`
     );
 
+    // 3. Open WhatsApp and update UI state
     window.open(`https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${inquiryText}`, '_blank');
+    setIsSubmitting(false);
     setFormSubmitted(true);
   };
 
@@ -502,13 +532,13 @@ export default function App() {
         </div>
       )}
 
-      {/* USER INQUIRY & PROJECT ESTIMATION AREA (WITH ESTIMATED DELIVERY TIME) */}
+      {/* USER INQUIRY & GOOGLE SHEETS FORM */}
       <section id="quote" className="py-20 sm:py-28 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/[0.06]">
         <div className="text-center mb-10">
           <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block mb-2 font-bold">Start Your Project</span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Request an Instant Proposal</h2>
           <p className="text-xs sm:text-sm text-zinc-400 mt-2 max-w-lg mx-auto">
-            Choose your preferred package to see real-time delivery turnaround. Submitting opens a direct WhatsApp chat with your estimated quote pre-filled.
+            Choose your preferred package to see real-time delivery turnaround. Submitting logs your details directly into our management sheet and opens WhatsApp.
           </p>
         </div>
 
@@ -518,9 +548,9 @@ export default function App() {
               <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto">
                 <Check className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-white">Opening WhatsApp Chat...</h3>
+              <h3 className="text-xl font-bold text-white">Inquiry Recorded! Opening WhatsApp Chat...</h3>
               <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                If WhatsApp didn't open automatically, click the direct button below:
+                Your request has been logged. If WhatsApp didn't launch automatically in a new window, tap below:
               </p>
               <a
                 href={getGeneralWhatsAppUrl()}
@@ -646,7 +676,7 @@ export default function App() {
                     <Phone className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                     <input
                       type="tel"
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 8650805090"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full bg-zinc-950/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-cyan-400 transition-colors"
@@ -668,17 +698,18 @@ export default function App() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/10 cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/10 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
-                <span>Submit &amp; Chat on WhatsApp ({currentPackage.deliveryTime})</span>
+                <span>{isSubmitting ? 'Logging to Sheet & Connecting...' : `Submit & Chat on WhatsApp (${currentPackage.deliveryTime})`}</span>
               </button>
             </form>
           )}
         </div>
       </section>
 
-      {/* PRICING PACKAGES (WITH DELIVERY TIMELINES) */}
+      {/* PRICING PACKAGES */}
       <section id="pricing" className="py-20 sm:py-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-white/[0.06]">
         <div className="text-center max-w-xl mx-auto mb-14">
           <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block mb-2 font-bold">Transparent Investment</span>
@@ -847,7 +878,7 @@ export default function App() {
               className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer border border-white/10"
             >
               {copiedEmail ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
-              <span>{copiedEmail ? 'Email Copied!' : 'vibhorverma2810@gmail.com'}</span>
+              <span>{copiedEmail ? 'Email Copied!' : CONTACT_EMAIL}</span>
             </button>
 
             <a
