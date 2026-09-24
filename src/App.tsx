@@ -800,7 +800,7 @@ export default function App() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Custom Web Application</span>
                 <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-[11px] font-mono text-amber-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> 2–3 Weeks
+                  <Clock className="w-3 h-3" /> 1–2 Weeks
                 </span>
               </div>
               <h3 className="text-2xl font-bold text-white mt-1">₹24,999+</h3>
