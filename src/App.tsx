@@ -811,7 +811,7 @@ export default function App() {
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Database &amp; authentication setup</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Payment gateway integration (Razorpay)</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> Custom administrative controls</li>
-                <li className="flex items-center gap-2 font-mono text-amber-400"><Clock className="w-3.5 h-3.5 shrink-0" /> Turnaround: 2 to 3 weeks</li>
+                <li className="flex items-center gap-2 font-mono text-amber-400"><Clock className="w-3.5 h-3.5 shrink-0" /> Turnaround: 1 to 2 weeks</li>
               </ul>
             </div>
 
